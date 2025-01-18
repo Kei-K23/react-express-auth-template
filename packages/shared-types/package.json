@@ -1,8 +1,9 @@
 {
-  "name": "shared-types",
+  "name": "@react-express-auth-template/types",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --build",
     "clean": "tsc --build --clean"
