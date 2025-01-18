@@ -8,10 +8,11 @@ export const errorHandler = (
   next: NextFunction
 ) => {
   if (err instanceof ZodError) {
-    return res.status(400).json({
+    res.status(400).json({
       message: "Validation error",
       errors: err.errors,
     });
+    return;
   }
 
   console.error(err);

@@ -42,6 +42,7 @@ export const loginSchema = z.object({
 });
 
 export const authResponseSchema = z.object({
+  user: userWithoutPasswordSchema,
   token: z.string(),
 });
 
