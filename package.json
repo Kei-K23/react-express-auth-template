@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "start": "pnpm -r start",
+    "postinstall": "ln -sf ../../.env ./apps/frontend/.env && ln -sf ../../.env ./apps/backend/.env"
   },
   "keywords": [],
   "author": "Kei-K23",
