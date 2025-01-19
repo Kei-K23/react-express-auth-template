@@ -12,6 +12,8 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
     "@react-express-auth-template/types": "workspace:*",
+    "@tanstack/react-query": "^5.64.1",
+    "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.473.0",
