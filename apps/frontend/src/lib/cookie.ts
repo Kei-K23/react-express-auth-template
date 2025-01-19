@@ -13,5 +13,9 @@ export const setCookie = (
   date.setTime(date.getTime() + minutes * 60 * 1000); // Convert minutes to milliseconds
   document.cookie = `${name}=${encodeURIComponent(
     value
-  )}; path=/; expires=${date.toUTCString()}; Secure; SameSite=Strict`;
+  )}; path=/; expires=${date.toUTCString()}; Secure=false; SameSite=Lax`;
+};
+
+export const removeCookie = (key: string) => {
+  document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC; Secure; HttpOnly`;
 };
