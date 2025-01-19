@@ -1,11 +1,17 @@
 import {
   loginSchema,
+  refreshTokenSchema,
   registerSchema,
 } from "@react-express-auth-template/types";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/db";
 import jwt from "jsonwebtoken";
+import {
+  ACCESS_TOKEN_EXPIRES_IN,
+  generateTokens,
+  verifyRefreshToken,
+} from "../lib/jwt";
 
 export const register: RequestHandler = async (
   req: Request,
@@ -34,13 +40,7 @@ export const register: RequestHandler = async (
       },
     });
 
-    const token = jwt.sign(
-      {
-        userId: user.id,
-      },
-      process.env.BACKEND_APP_JWT_KEY! || "secret_key",
-      { expiresIn: "1d" }
-    );
+    const { accessToken, refreshToken } = await generateTokens(user.id);
 
     res.status(201).json({
       user: {
@@ -50,7 +50,8 @@ export const register: RequestHandler = async (
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
-      token,
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
     next(error);
@@ -71,7 +72,7 @@ export const login: RequestHandler = async (
     });
 
     if (!existingUser) {
-      res.status(400).json({ message: "Invalid credentials" });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
@@ -81,19 +82,13 @@ export const login: RequestHandler = async (
     );
 
     if (!isVerifyPassword) {
-      res.status(400).json({ message: "Invalid credentials" });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
-    const token = jwt.sign(
-      {
-        userId: existingUser.id,
-      },
-      process.env.BACKEND_APP_JWT_KEY! || "secret_key",
-      { expiresIn: "1d" }
-    );
+    const { accessToken, refreshToken } = await generateTokens(existingUser.id);
 
-    res.status(201).json({
+    res.status(200).json({
       user: {
         id: existingUser.id,
         username: existingUser.username,
@@ -101,7 +96,8 @@ export const login: RequestHandler = async (
         createdAt: existingUser.createdAt,
         updatedAt: existingUser.updatedAt,
       },
-      token,
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
     next(error);
@@ -133,6 +129,95 @@ export const getMe = async (
       email: user.email,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshToken: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { refreshToken } = refreshTokenSchema.parse(req.body);
+
+    if (!refreshToken) {
+      res.status(401).json({ message: "Refresh token is required" });
+      return;
+    }
+
+    const { userId } = await verifyRefreshToken(refreshToken);
+
+    if (!userId) {
+      res.status(401).json({ message: "Invalid refresh token" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user.id,
+      },
+      process.env.BACKEND_APP_JWT_KEY! || "secret_key",
+      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
+    );
+
+    res.status(200).json({
+      accessToken: token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logout: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { refreshToken } = refreshTokenSchema.parse(req.body);
+
+    if (!refreshToken) {
+      res.status(401).json({ message: "Refresh token is required" });
+      return;
+    }
+
+    const { userId } = await verifyRefreshToken(refreshToken);
+
+    if (!userId) {
+      res.status(401).json({ message: "Invalid refresh token" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    await prisma.refreshToken.update({
+      where: { token: refreshToken },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+
+    res.status(200).json({
+      message: "Successfully logout",
     });
   } catch (error) {
     next(error);
