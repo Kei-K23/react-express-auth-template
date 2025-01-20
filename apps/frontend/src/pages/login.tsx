@@ -17,6 +17,7 @@ import { useAuth } from "@/context/auth";
 import { LoginInput } from "@react-express-auth-template/types";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string({ required_error: "Email is required" }).email().trim(),
@@ -46,6 +47,7 @@ export default function LoginPage() {
       auth.login(data.accessToken, data.refreshToken, data.user);
       const from = location.state?.from?.pathname || "/";
       navigate(from);
+      toast.success("Login successful");
     },
   });
 
@@ -60,7 +62,19 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold">Sign in to your account</h2>
           <p className="text-muted-foreground">Enter your credentials below</p>
         </div>
-
+        {mutation.error && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof Error
+                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (mutation.error as any)?.response?.data?.message
+                  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (mutation.error as any)?.response?.data?.message
+                  : mutation.error.message
+                : "An error occurred"}
+            </AlertDescription>
+          </Alert>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -90,16 +104,6 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-
-            {mutation.error && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {mutation.error instanceof Error
-                    ? mutation.error.message
-                    : "An error occurred"}
-                </AlertDescription>
-              </Alert>
-            )}
 
             <Button
               type="submit"

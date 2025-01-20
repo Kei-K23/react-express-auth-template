@@ -24,7 +24,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config as InternalAxiosRequestConfig;
 
-    if (originalRequest.url === "/api/auth/refresh") {
+    if (originalRequest.url !== "/api/auth/refresh") {
       return Promise.reject(error);
     }
 

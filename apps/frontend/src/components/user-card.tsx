@@ -14,6 +14,7 @@ import { UserEditDialog } from "./user-edit-dialog";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import useConfirmDialog from "@/hooks/use-confirm-dialog";
+import { toast } from "sonner";
 
 export function UserCard() {
   const [ConfirmDialog, confirm] = useConfirmDialog(
@@ -30,12 +31,17 @@ export function UserCard() {
     onSuccess: () => {
       logout();
       navigate("/login");
+      toast.success("User account deleted successful");
+    },
+    onError: () => {
+      toast.error("Something went wrong");
     },
   });
 
   const logoutHandler = async () => {
     logout();
     navigate("/login");
+    toast.success("Logout successful");
   };
 
   return (

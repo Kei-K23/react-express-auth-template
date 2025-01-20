@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { z } from "zod";
+import { toast } from "sonner";
 
 const registerSchema = z.object({
   username: z
@@ -51,6 +52,7 @@ export default function RegisterPage() {
       auth.login(data.accessToken, data.refreshToken, data.user);
       const from = location.state?.from?.pathname || "/";
       navigate(from);
+      toast.success("Register successful");
     },
   });
 
@@ -66,6 +68,20 @@ export default function RegisterPage() {
             Create your account
           </h2>
         </div>
+
+        {mutation.error && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              {mutation.error instanceof Error
+                ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (mutation.error as any)?.response?.data?.message
+                  ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (mutation.error as any)?.response?.data?.message
+                  : mutation.error.message
+                : "An error occurred"}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -110,16 +126,6 @@ export default function RegisterPage() {
                 </FormItem>
               )}
             />
-
-            {mutation.error && (
-              <Alert variant="destructive">
-                <AlertDescription>
-                  {mutation.error instanceof Error
-                    ? mutation.error.message
-                    : "An error occurred"}
-                </AlertDescription>
-              </Alert>
-            )}
 
             <Button
               type="submit"
