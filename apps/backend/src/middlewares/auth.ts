@@ -17,7 +17,6 @@ export const authenticate = (
   next: NextFunction
 ) => {
   const accessToken = req.headers.authorization?.split(" ")[1];
-  // const refreshToken = req.headers["X-Refresh-Token"];
 
   if (!accessToken) {
     res.status(401).json({ message: "Authentication required" });

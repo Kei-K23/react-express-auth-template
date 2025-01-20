@@ -1,13 +1,9 @@
-import { useAuth } from "@/context/auth";
+import { UserCard } from "@/components/user-card";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
   return (
-    <div>
-      Dashboard
-      <div>
-        {user?.username} <br /> {user?.email}
-      </div>
+    <div className="min-h-screen w-screen flex items-center justify-center">
+      <UserCard />
     </div>
   );
 }

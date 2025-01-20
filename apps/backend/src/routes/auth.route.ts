@@ -14,6 +14,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/getMe", authenticate, getMe);
 router.post("/refresh", refreshToken);
-router.post("/logout", authenticate, logout);
+router.post("/logout", logout);
 
 export { router as authRouter };
