@@ -54,6 +54,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (refreshToken) {
       try {
         api.post("/api/auth/logout", { refreshToken });
+        Cookies.remove(constant.ACCESS_TOKEN_KEY);
+        Cookies.remove(constant.REFRESH_TOKEN_KEY);
       } catch {
         Cookies.remove(constant.ACCESS_TOKEN_KEY);
         Cookies.remove(constant.REFRESH_TOKEN_KEY);

@@ -8,42 +8,80 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/context/auth";
 import { UserEditDialog } from "./user-edit-dialog";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import useConfirmDialog from "@/hooks/use-confirm-dialog";
 
 export function UserCard() {
+  const [ConfirmDialog, confirm] = useConfirmDialog(
+    "Are you sure?",
+    "This process cannot be undo."
+  );
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete("/api/auth/deleteMe");
+    },
+    onSuccess: () => {
+      logout();
+      navigate("/login");
+    },
+  });
+
   const logoutHandler = async () => {
     logout();
-    navigate("/");
+    navigate("/login");
   };
 
   return (
-    <Card className="max-w-[350px]">
-      <CardHeader>
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="font-bold">
-              {user?.username.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <CardTitle>{user?.username}</CardTitle>
-            <CardDescription>{user?.email}</CardDescription>
+    <>
+      <ConfirmDialog />
+      <Card className="max-w-[400px]">
+        <CardHeader>
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-12 w-12">
+              <AvatarFallback className="font-bold">
+                {user?.username.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <CardTitle>{user?.username}</CardTitle>
+              <CardDescription>{user?.email}</CardDescription>
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardFooter className="flex justify-between gap-x-3">
-        <UserEditDialog />
-        <Button variant="destructive" onClick={logoutHandler}>
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex justify-between gap-x-3">
+          <UserEditDialog disabled={deleteMutation.isPending} />
+          <Button
+            disabled={deleteMutation.isPending}
+            variant="destructive"
+            onClick={async () => {
+              const ok = await confirm();
+              if (!ok) {
+                return;
+              }
+              deleteMutation.mutate();
+            }}
+          >
+            <User className="h-4 w-4" />
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+          </Button>
+          <Button
+            disabled={deleteMutation.isPending}
+            variant="destructive"
+            onClick={logoutHandler}
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

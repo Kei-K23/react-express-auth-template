@@ -6,6 +6,9 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
+/**
+ * Protect route from unauthorized user
+ */
 export default function AuthGuard({ children }: AuthGuardProps) {
   const location = useLocation();
   const { user, loading } = useAuth();

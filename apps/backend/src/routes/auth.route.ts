@@ -16,7 +16,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/getMe", authenticate, getMe);
 router.patch("/updateMe", authenticate, updateMe);
-router.post("/deleteMe", authenticate, deleteMe);
+router.delete("/deleteMe", authenticate, deleteMe);
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
 

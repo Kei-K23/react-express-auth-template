@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/auth";
 import AuthGuard from "./components/auth-guard";
 import LoginPage from "./pages/login";
 import RegisterPage from "./pages/register";
-import DashboardPage from "./pages/dashboard";
+import HomePage from "./pages/home";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -15,27 +15,13 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route
-              path="/login"
-              element={
-                <AuthGuard>
-                  <LoginPage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <AuthGuard>
-                  <RegisterPage />
-                </AuthGuard>
-              }
-            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             <Route
               path="/"
               element={
                 <AuthGuard>
-                  <DashboardPage />
+                  <HomePage />
                 </AuthGuard>
               }
             />

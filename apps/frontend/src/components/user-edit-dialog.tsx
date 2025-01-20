@@ -32,7 +32,11 @@ const userEditSchema = z.object({
 
 type UserEditForm = z.infer<typeof userEditSchema>;
 
-export function UserEditDialog() {
+interface UserEditDialogProps {
+  disabled?: boolean;
+}
+
+export function UserEditDialog({ disabled }: UserEditDialogProps) {
   const [open, setOpen] = useState(false);
   const { user, login } = useAuth();
 
@@ -62,8 +66,8 @@ export function UserEditDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <User className="mr-2 h-4 w-4" />
+        <Button disabled={disabled} variant="outline">
+          <User className="h-4 w-4" />
           Edit
         </Button>
       </DialogTrigger>
