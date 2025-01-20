@@ -8,8 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { User, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/context/auth";
+import { UserEditDialog } from "./user-edit-dialog";
 
 export function UserCard() {
   const { user, logout } = useAuth();
@@ -37,10 +38,7 @@ export function UserCard() {
       </CardHeader>
 
       <CardFooter className="flex justify-between gap-x-3">
-        <Button variant="outline">
-          <User className="mr-2 h-4 w-4" />
-          Edit
-        </Button>
+        <UserEditDialog />
         <Button variant="destructive" onClick={logoutHandler}>
           <LogOut className="mr-2 h-4 w-4" />
           Logout
