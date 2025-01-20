@@ -2,6 +2,7 @@ import {
   loginSchema,
   refreshTokenSchema,
   registerSchema,
+  userUpdateSchema,
 } from "@react-express-auth-template/types";
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import bcrypt from "bcryptjs";
@@ -129,6 +130,55 @@ export const getMe = async (
       email: user.email,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { username, email } = userUpdateSchema.parse(req.body);
+    const user = await prisma.user.update({
+      where: {
+        id: req.user.userId,
+      },
+      data: {
+        username,
+        email,
+      },
+    });
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    await prisma.user.delete({
+      where: {
+        id: req.user.userId,
+      },
+    });
+
+    res.json({
+      message: "Successfully deleted the account",
     });
   } catch (error) {
     next(error);

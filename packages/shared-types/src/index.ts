@@ -30,6 +30,14 @@ export const registerSchema = z.object({
     .max(18, "Password should not exceed 18 characters"),
 });
 
+export const userUpdateSchema = z.object({
+  username: z
+    .string({ required_error: "Username is required" })
+    .trim()
+    .min(3, "Username should be at least 3 character"),
+  email: z.string({ required_error: "Email is required" }).email().trim(),
+});
+
 export const loginSchema = z.object({
   email: z.string({ required_error: "Email is required" }).email().trim(),
   password: z
@@ -62,3 +70,4 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;
 export type RefreshTokenResponse = z.infer<typeof refreshTokenResponseSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
