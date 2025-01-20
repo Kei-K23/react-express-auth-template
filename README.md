@@ -1,4 +1,4 @@
-# Full-Stack Authentication System
+# React + Express Auth Template
 
 A modern, type-safe authentication system built with React, Express, and TypeScript using a monorepo structure with pnpm workspace.
 
@@ -9,8 +9,9 @@ A modern, type-safe authentication system built with React, Express, and TypeScr
 ```
 ├── packages/
 │   ├── types/          # Shared TypeScript types and Zod schemas
-│   ├── backend/        # Express.js backend server
-│   └── frontend/       # React frontend application
+|── apps/
+|   ├── backend/        # Express.js backend server
+|   └── frontend/       # React frontend application
 ```
 
 ### Technology Stack
