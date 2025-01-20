@@ -23,6 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-migrations
 .env
 .env.local
