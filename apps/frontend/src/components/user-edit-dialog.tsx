@@ -46,20 +46,13 @@ export function UserEditDialog() {
 
   const mutation = useMutation({
     mutationFn: async (data: UserEditForm) => {
-      const response = await api.patch("/auth/me", data);
+      const response = await api.patch("/api/auth/updateMe", data);
       return response.data;
     },
     onSuccess: (data) => {
       // Update the user data in auth context
       if (user) {
-        login(
-          localStorage.getItem("accessToken") || "",
-          localStorage.getItem("refreshToken") || "",
-          {
-            ...user,
-            ...data,
-          }
-        );
+        login(data.accessToken, data.refreshToken, data.user);
       }
       setOpen(false);
       form.reset(data);

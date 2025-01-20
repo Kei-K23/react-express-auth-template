@@ -153,12 +153,18 @@ export const updateMe = async (
       },
     });
 
+    const { accessToken, refreshToken } = await generateTokens(user.id);
+
     res.json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      accessToken,
+      refreshToken,
     });
   } catch (error) {
     next(error);

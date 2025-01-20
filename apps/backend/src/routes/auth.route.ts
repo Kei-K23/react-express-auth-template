@@ -15,8 +15,8 @@ const router: Router = Router();
 router.post("/register", register);
 router.post("/login", login);
 router.get("/getMe", authenticate, getMe);
-router.get("/updateMe", authenticate, updateMe);
-router.get("/deleteMe", authenticate, deleteMe);
+router.patch("/updateMe", authenticate, updateMe);
+router.post("/deleteMe", authenticate, deleteMe);
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
 
