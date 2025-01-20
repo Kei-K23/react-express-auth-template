@@ -16,16 +16,17 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  const accessToken = req.headers.authorization?.split(" ")[1];
+  // const refreshToken = req.headers["X-Refresh-Token"];
 
-  if (!token) {
+  if (!accessToken) {
     res.status(401).json({ message: "Authentication required" });
     return;
   }
 
   try {
     const decoded = jwt.verify(
-      token,
+      accessToken,
       process.env.BACKEND_APP_JWT_KEY! || "secret_key"
     ) as {
       userId: string;

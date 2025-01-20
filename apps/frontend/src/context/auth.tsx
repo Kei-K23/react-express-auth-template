@@ -1,7 +1,7 @@
 import constant from "@/constant";
 import api from "@/lib/axios";
-import { getCookie, removeCookie, setCookie } from "@/lib/cookie";
 import { UserWithoutPasswordField as User } from "@react-express-auth-template/types";
+import Cookies from "js-cookie";
 import { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextProps {
@@ -23,42 +23,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     (async () => {
-      const accessToken = getCookie(constant.ACCESS_TOKEN_KEY);
-      const refreshToken = getCookie(constant.REFRESH_TOKEN_KEY);
+      const accessToken = Cookies.get(constant.ACCESS_TOKEN_KEY);
+      const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
+      console.log(accessToken, refreshToken);
 
-      if (accessToken && refreshToken) {
+      if (refreshToken) {
         try {
           const res = await api.get("/api/auth/getMe");
           setUser(res.data);
         } catch {
-          removeCookie(constant.ACCESS_TOKEN_KEY);
-          removeCookie(constant.REFRESH_TOKEN_KEY);
+          Cookies.remove(constant.ACCESS_TOKEN_KEY);
+          Cookies.remove(constant.REFRESH_TOKEN_KEY);
           setUser(null);
         }
       }
       setLoading(false);
     })();
-  });
+  }, []);
 
   const login = (accessToken: string, refreshToken: string, user: User) => {
-    setCookie(constant.ACCESS_TOKEN_KEY, accessToken, 15);
-    setCookie(constant.REFRESH_TOKEN_KEY, refreshToken, 43200);
+    Cookies.set(constant.ACCESS_TOKEN_KEY, accessToken, {
+      expires: constant.ACCESS_TOKEN_EXPIRE,
+    });
+    Cookies.set(constant.REFRESH_TOKEN_KEY, refreshToken, {
+      expires: constant.REFRESH_TOKEN_EXPIRE,
+    });
     setUser(user);
   };
 
   const logout = async () => {
-    const refreshToken = getCookie(constant.REFRESH_TOKEN_KEY);
+    const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
     if (refreshToken) {
       try {
         api.post("/api/auth/logout", { refreshToken });
       } catch {
-        removeCookie(constant.ACCESS_TOKEN_KEY);
-        removeCookie(constant.REFRESH_TOKEN_KEY);
+        Cookies.remove(constant.ACCESS_TOKEN_KEY);
+        Cookies.remove(constant.REFRESH_TOKEN_KEY);
         setUser(null);
       }
     } else {
-      removeCookie(constant.ACCESS_TOKEN_KEY);
-      removeCookie(constant.REFRESH_TOKEN_KEY);
+      Cookies.remove(constant.ACCESS_TOKEN_KEY);
+      Cookies.remove(constant.REFRESH_TOKEN_KEY);
       setUser(null);
     }
   };

@@ -1,3 +1,13 @@
+import { useAuth } from "@/context/auth";
+
 export default function DashboardPage() {
-  return <div>Dashboard</div>;
+  const { user } = useAuth();
+  return (
+    <div>
+      Dashboard
+      <div>
+        {user?.username} <br /> {user?.email}
+      </div>
+    </div>
+  );
 }
