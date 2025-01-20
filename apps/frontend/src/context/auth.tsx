@@ -23,9 +23,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     (async () => {
-      const accessToken = Cookies.get(constant.ACCESS_TOKEN_KEY);
       const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
-      console.log(accessToken, refreshToken);
 
       if (refreshToken) {
         try {
