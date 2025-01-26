@@ -2,7 +2,8 @@ import constant from "@/constant";
 import api from "@/lib/axios";
 import { UserWithoutPasswordField as User } from "@react-express-auth-template/types";
 import Cookies from "js-cookie";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface AuthContextProps {
   user: User | null;
@@ -18,26 +19,29 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
+  // Fetch the user details if a refresh token is present
+  const { isLoading } = useQuery<User>(
+    ["authUser"],
+    async () => {
       const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
+      if (!refreshToken) throw new Error("No refresh token found");
 
-      if (refreshToken) {
-        try {
-          const res = await api.get("/api/auth/getMe");
-          setUser(res.data);
-        } catch {
-          Cookies.remove(constant.ACCESS_TOKEN_KEY);
-          Cookies.remove(constant.REFRESH_TOKEN_KEY);
-          setUser(null);
-        }
-      }
-      setLoading(false);
-    })();
-  }, []);
+      const res = await api.get("/api/auth/getMe");
+      setUser(res.data);
+      return res.data;
+    },
+    {
+      retry: false,
+      onError: () => {
+        Cookies.remove(constant.ACCESS_TOKEN_KEY);
+        Cookies.remove(constant.REFRESH_TOKEN_KEY);
+        setUser(null);
+      },
+    }
+  );
 
   const login = (accessToken: string, refreshToken: string, user: User) => {
     Cookies.set(constant.ACCESS_TOKEN_KEY, accessToken, {
@@ -47,32 +51,39 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       expires: constant.REFRESH_TOKEN_EXPIRE,
     });
     setUser(user);
+    queryClient.setQueryData(["authUser"], user);
   };
 
-  const logout = async () => {
-    const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
-    if (refreshToken) {
-      try {
-        api.post("/api/auth/logout", { refreshToken });
-        Cookies.remove(constant.ACCESS_TOKEN_KEY);
-        Cookies.remove(constant.REFRESH_TOKEN_KEY);
-      } catch {
-        Cookies.remove(constant.ACCESS_TOKEN_KEY);
-        Cookies.remove(constant.REFRESH_TOKEN_KEY);
-        setUser(null);
+  const logoutMutation = useMutation(
+    async () => {
+      const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
+      if (refreshToken) {
+        await api.post("/api/auth/logout", { refreshToken });
       }
-    } else {
       Cookies.remove(constant.ACCESS_TOKEN_KEY);
       Cookies.remove(constant.REFRESH_TOKEN_KEY);
-      setUser(null);
+    },
+    {
+      onSuccess: () => {
+        setUser(null);
+        queryClient.removeQueries({ queryKey: ["authUser"] });
+      },
+      onError: () => {
+        setUser(null);
+        queryClient.removeQueries(["authUser"]);
+      },
     }
+  );
+
+  const logout = async () => {
+    await logoutMutation.mutateAsync();
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        loading,
+        loading: isLoading,
         login,
         logout,
       }}

@@ -29,6 +29,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     if (location.pathname === "/login" || location.pathname === "/register") {
       return <Navigate to={"/"} state={{ from: location }} replace />;
     } else {
+      // Protected routes
       return <>{children}</>;
     }
   }
