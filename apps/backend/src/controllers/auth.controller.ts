@@ -13,6 +13,12 @@ import {
   generateTokens,
   verifyRefreshToken,
 } from "../lib/jwt";
+import queryString from "query-string";
+
+// OAuth2 URLs
+const googleAuthURL = "https://accounts.google.com/o/oauth2/v2/auth";
+const googleTokenURL = "https://oauth2.googleapis.com/token";
+const googleUserInfoURL = "https://www.googleapis.com/oauth2/v3/userinfo";
 
 export const register: RequestHandler = async (
   req: Request,
@@ -275,6 +281,86 @@ export const logout: RequestHandler = async (
     res.status(200).json({
       message: "Successfully logout",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleOAuth: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const queryParams = queryString.stringify({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: process.env.REDIRECT_URI,
+      response_type: "code",
+      scope: "openid profile email",
+      access_type: "offline",
+      prompt: "consent",
+    });
+
+    res.redirect(`${googleAuthURL}?${queryParams}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleOAuthCallback: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { code } = req.query;
+
+  if (!code) {
+    res.status(400).send("Authorization code not provided");
+    return;
+  }
+
+  try {
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch(googleTokenURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: JSON.stringify({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: process.env.REDIRECT_URI,
+        grant_type: "authorization_code",
+        code: code,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error("Failed to fetch access token");
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Fetch user profile data
+    const userInfoResponse = await fetch(googleUserInfoURL, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!userInfoResponse.ok) {
+      throw new Error("Failed to fetch access token");
+    }
+
+    const userInfoResponseData = await userInfoResponse.json();
+
+    // Send user profile details to frontend
+    res.redirect(
+      `${process.env.FRONTEND_URL}/?name=${encodeURIComponent(
+        userInfoResponseData.name
+      )}&email=${userInfoResponseData.email}&picture=${encodeURIComponent(
+        userInfoResponseData.picture
+      )}`
+    );
   } catch (error) {
     next(error);
   }
