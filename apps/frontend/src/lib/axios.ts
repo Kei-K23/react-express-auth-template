@@ -22,11 +22,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig;
+    console.log(error);
 
-    if (originalRequest.url !== "/api/auth/refresh") {
-      return Promise.reject(error);
-    }
+    const originalRequest = error.config as InternalAxiosRequestConfig;
 
     try {
       if (!refreshPromise) {

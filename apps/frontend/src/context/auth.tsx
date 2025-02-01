@@ -22,11 +22,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const queryClient = useQueryClient();
 
   // Fetch the user details if a refresh token is present
-  const {
-    isLoading,
-    data: user,
-    error,
-  } = useQuery<User>({
+  const { isLoading, data: user } = useQuery<User>({
     queryKey: ["authUser"],
     queryFn: async () => {
       const refreshToken = Cookies.get(constant.REFRESH_TOKEN_KEY);
@@ -54,10 +50,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (refreshToken) {
         await api.post("/api/auth/logout", { refreshToken });
       }
-      Cookies.remove(constant.ACCESS_TOKEN_KEY);
-      Cookies.remove(constant.REFRESH_TOKEN_KEY);
     },
     onSuccess: () => {
+      Cookies.remove(constant.ACCESS_TOKEN_KEY);
+      Cookies.remove(constant.REFRESH_TOKEN_KEY);
       queryClient.removeQueries({ queryKey: ["authUser"] });
     },
     onError: () => {
@@ -68,11 +64,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     await logoutMutation.mutateAsync();
   };
-
-  if (error) {
-    Cookies.remove(constant.ACCESS_TOKEN_KEY);
-    Cookies.remove(constant.REFRESH_TOKEN_KEY);
-  }
 
   return (
     <AuthContext.Provider
